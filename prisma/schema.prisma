@@ -1,0 +1,116 @@
+// Schema do Banco de Dados - Cine Cocais
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo de Usuários
+model User {
+  id        String   @id @default(uuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  cpf       String?  @unique
+  telefone  String?
+  tipo      TipoUsuario @default(USUARIO)
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamentos
+  inscricoes Inscricao[]
+
+  @@map("users")
+}
+
+// Enum para tipos de usuário
+enum TipoUsuario {
+  ADMIN
+  USUARIO
+}
+
+// Modelo de Eventos/Programação
+model Evento {
+  id          String   @id @default(uuid())
+  titulo      String
+  descricao   String   @db.Text
+  dataEvento  DateTime
+  horario     String
+  local       String
+  tipo        TipoEvento
+  imagemUrl   String?
+  vagasTotal  Int?
+  vagasOcupadas Int   @default(0)
+  ativo       Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relacionamentos
+  inscricoes  Inscricao[]
+  
+  @@map("eventos")
+}
+
+// Enum para tipos de evento
+enum TipoEvento {
+  EXIBICAO
+  DEBATE
+  OFICINA
+  WORKSHOP
+}
+
+// Modelo de Inscrições
+model Inscricao {
+  id        String   @id @default(uuid())
+  userId    String
+  eventoId  String
+  status    StatusInscricao @default(CONFIRMADA)
+  createdAt DateTime @default(now())
+
+  // Relacionamentos
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  evento    Evento   @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventoId])
+  @@map("inscricoes")
+}
+
+// Enum para status de inscrição
+enum StatusInscricao {
+  CONFIRMADA
+  CANCELADA
+  LISTA_ESPERA
+}
+
+// Modelo de Galeria
+model GaleriaItem {
+  id          String   @id @default(uuid())
+  titulo      String
+  descricao   String?
+  imagemUrl   String
+  eventoId    String?
+  destaque    Boolean  @default(false)
+  ativo       Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("galeria")
+}
+
+// Modelo de Contato
+model Contato {
+  id        String   @id @default(uuid())
+  nome      String
+  email     String
+  assunto   String
+  mensagem  String   @db.Text
+  lido      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("contatos")
+}
