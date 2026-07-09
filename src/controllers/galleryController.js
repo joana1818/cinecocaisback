@@ -45,9 +45,10 @@ const buscarItem = async (req, res) => {
 // Criar item (apenas admin)
 const criarItem = async (req, res) => {
   try {
-    const { titulo, descricao, imagemUrl, eventoId, destaque } = req.body;
+    const { titulo, descricao, imagemUrl, logoUrl, eventoId, destaque } = req.body;
+    const resolvedImageUrl = imagemUrl || logoUrl;
 
-    if (!titulo || !imagemUrl) {
+    if (!titulo || !resolvedImageUrl) {
       return res.status(400).json({ 
         error: 'Campos obrigatórios: titulo, imagemUrl' 
       });
@@ -57,7 +58,7 @@ const criarItem = async (req, res) => {
       data: {
         titulo,
         descricao,
-        imagemUrl,
+        imagemUrl: resolvedImageUrl,
         eventoId,
         destaque: destaque || false
       }

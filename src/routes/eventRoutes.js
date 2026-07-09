@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const eventController = require('../controllers/eventController');
 const { authMiddleware, adminMiddleware } = require('../middlewares/auth');
+const { parseImageUpload } = require('../utils/imageUpload');
 
 // Rotas públicas
 router.get('/', eventController.listarEventos);
@@ -13,8 +14,8 @@ router.delete('/:id/cancelar', authMiddleware, eventController.cancelarInscricao
 router.get('/minhas/inscricoes', authMiddleware, eventController.minhasInscricoes);
 
 // Rotas administrativas (apenas admin)
-router.post('/', authMiddleware, adminMiddleware, eventController.criarEvento);
-router.put('/:id', authMiddleware, adminMiddleware, eventController.atualizarEvento);
+router.post('/', authMiddleware, adminMiddleware, parseImageUpload, eventController.criarEvento);
+router.put('/:id', authMiddleware, adminMiddleware, parseImageUpload, eventController.atualizarEvento);
 router.delete('/:id', authMiddleware, adminMiddleware, eventController.deletarEvento);
 
 module.exports = router;

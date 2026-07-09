@@ -71,8 +71,11 @@ const criarEvento = async (req, res) => {
       local,
       tipo,
       imagemUrl,
+      logoUrl,
       vagasTotal
     } = req.body;
+
+    const resolvedImageUrl = imagemUrl || logoUrl;
 
     // Validações
     if (!titulo || !descricao || !dataEvento || !horario || !local || !tipo) {
@@ -89,7 +92,7 @@ const criarEvento = async (req, res) => {
         horario,
         local,
         tipo,
-        imagemUrl,
+        imagemUrl: resolvedImageUrl,
         vagasTotal
       }
     });
