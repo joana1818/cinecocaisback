@@ -19,3 +19,14 @@ test('uses body URL when no file uploaded', () => {
 
   assert.equal(result, 'https://teste.com/foto.jpg');
 });
+
+test('converts relative uploaded URLs to absolute URLs using request host', () => {
+  const result = resolveImageUrl({
+    body: {},
+    file: { filename: 'foto.png' },
+    protocol: 'https',
+    get: (name) => (name === 'host' ? 'api.exemplo.com' : undefined)
+  });
+
+  assert.equal(result, 'https://api.exemplo.com/uploads/foto.png');
+});

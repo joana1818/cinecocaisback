@@ -34,6 +34,40 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }
 });
 
+const getBaseUrl = (req) => {
+  const configuredBaseUrl = process.env.PUBLIC_URL || process.env.API_URL || process.env.BACKEND_URL || process.env.APP_URL;
+
+  if (typeof configuredBaseUrl === 'string' && configuredBaseUrl.trim()) {
+    return configuredBaseUrl.replace(/\/$/, '');
+  }
+
+  const forwardedProto = req?.headers?.['x-forwarded-proto'] || req?.protocol || 'http';
+  const host = req?.get?.('host') || req?.headers?.host;
+
+  if (host) {
+    return `${forwardedProto}://${host}`;
+  }
+
+  return null;
+};
+
+const toPublicUrl = (req, value) => {
+  if (typeof value !== 'string' || !value.trim()) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
+
+  if (value.startsWith('/')) {
+    const baseUrl = getBaseUrl(req);
+    return baseUrl ? `${baseUrl}${value}` : value;
+  }
+
+  return value;
+};
+
 const parseImageUpload = (req, res, next) => {
   upload.any()(req, res, (err) => {
     if (err) {
@@ -71,20 +105,17 @@ const parseImageUpload = (req, res, next) => {
 
 const resolveImageUrl = (req) => {
   if (req.file?.filename) {
-    return `/uploads/${req.file.filename}`;
+    return toPublicUrl(req, `/uploads/${req.file.filename}`);
   }
 
   const value = req.body?.imagemUrl || req.body?.imageUrl || req.body?.logoUrl || req.body?.url || req.body?.imagem || req.body?.image;
 
-  if (typeof value === 'string' && value.trim()) {
-    return value;
-  }
-
-  return null;
+  return toPublicUrl(req, value);
 };
 
 module.exports = {
   upload,
   parseImageUpload,
-  resolveImageUrl
+  resolveImageUrl,
+  buildPublicImageUrl: toPublicUrl
 };

@@ -1,6 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
 const { normalizeBoolean, normalizeOptionalInt } = require('../utils/payloadParsers');
-const prisma = new PrismaClient();
+const { buildPublicImageUrl } = require('../utils/imageUpload');
+const prisma = require('../config/databse');
 
 // Listar todos os eventos
 const listarEventos = async (req, res) => {
@@ -25,7 +25,12 @@ const listarEventos = async (req, res) => {
       res.set('X-Empty-Message', 'Nenhum evento cadastrado no momento');
     }
 
-    res.json(eventos);
+    const eventosPublicos = eventos.map((evento) => ({
+      ...evento,
+      imagemUrl: buildPublicImageUrl(req, evento.imagemUrl)
+    }));
+
+    res.json(eventosPublicos);
   } catch (error) {
     console.error('Erro ao listar eventos:', error);
     res.status(500).json({ error: 'Erro ao buscar eventos' });
@@ -58,7 +63,10 @@ const buscarEvento = async (req, res) => {
       return res.status(404).json({ error: 'Evento não encontrado' });
     }
 
-    res.json(evento);
+    res.json({
+      ...evento,
+      imagemUrl: buildPublicImageUrl(req, evento.imagemUrl)
+    });
   } catch (error) {
     console.error('Erro ao buscar evento:', error);
     res.status(500).json({ error: 'Erro ao buscar evento' });

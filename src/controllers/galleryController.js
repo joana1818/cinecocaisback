@@ -1,6 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
 const { normalizeBoolean } = require('../utils/payloadParsers');
-const prisma = new PrismaClient();
+const { buildPublicImageUrl } = require('../utils/imageUpload');
+const prisma = require('../config/databse');
 
 // Listar itens da galeria
 const listarGaleria = async (req, res) => {
@@ -20,7 +20,12 @@ const listarGaleria = async (req, res) => {
       res.set('X-Empty-Message', 'Nenhuma foto cadastrada na galeria no momento');
     }
 
-    res.json(galeria);
+    const galeriaPublica = galeria.map((item) => ({
+      ...item,
+      imagemUrl: buildPublicImageUrl(req, item.imagemUrl)
+    }));
+
+    res.json(galeriaPublica);
   } catch (error) {
     console.error('Erro ao listar galeria:', error);
     res.status(500).json({ error: 'Erro ao buscar galeria' });
@@ -40,7 +45,10 @@ const buscarItem = async (req, res) => {
       return res.status(404).json({ error: 'Item não encontrado' });
     }
 
-    res.json(item);
+    res.json({
+      ...item,
+      imagemUrl: buildPublicImageUrl(req, item.imagemUrl)
+    });
   } catch (error) {
     console.error('Erro ao buscar item:', error);
     res.status(500).json({ error: 'Erro ao buscar item' });

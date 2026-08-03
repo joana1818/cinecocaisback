@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../config/databse');
 
 // Enviar mensagem de contato
 const enviarMensagem = async (req, res) => {

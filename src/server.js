@@ -13,15 +13,19 @@ const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
+app.set('trust proxy', true);
+
 const allowedOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:5500',
   'http://127.0.0.1:5500',
-  process.env.FRONTEND_URL
+  process.env.FRONTEND_URL,
+  ...(process.env.FRONTEND_URLS || '').split(',').map((value) => value.trim()).filter(Boolean)
 ].filter(Boolean);
 
 const localOriginPattern = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
+const vercelOriginPattern = /^https:\/\/([a-z0-9-]+\.)*vercel\.app$/i;
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -29,7 +33,7 @@ app.use(cors({
       return callback(null, true);
     }
 
-    if (allowedOrigins.includes(origin) || localOriginPattern.test(origin)) {
+    if (allowedOrigins.includes(origin) || localOriginPattern.test(origin) || vercelOriginPattern.test(origin)) {
       return callback(null, true);
     }
 

@@ -1,7 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
-
-const prisma = new PrismaClient();
+const prisma = require('../config/databse');
 
 // Listar todos os usuários (apenas admin)
 const listarUsuarios = async (req, res) => {
