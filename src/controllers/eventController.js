@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const { normalizeBoolean, normalizeOptionalInt } = require('../utils/payloadParsers');
 const prisma = new PrismaClient();
 
 // Listar todos os eventos
@@ -19,6 +20,10 @@ const listarEventos = async (req, res) => {
         }
       }
     });
+
+    if (eventos.length === 0) {
+      res.set('X-Empty-Message', 'Nenhum evento cadastrado no momento');
+    }
 
     res.json(eventos);
   } catch (error) {
@@ -76,6 +81,7 @@ const criarEvento = async (req, res) => {
     } = req.body;
 
     const resolvedImageUrl = imagemUrl || logoUrl;
+    const normalizedVagasTotal = normalizeOptionalInt(vagasTotal);
 
     // Validações
     if (!titulo || !descricao || !dataEvento || !horario || !local || !tipo) {
@@ -93,7 +99,7 @@ const criarEvento = async (req, res) => {
         local,
         tipo,
         imagemUrl: resolvedImageUrl,
-        vagasTotal
+        vagasTotal: normalizedVagasTotal
       }
     });
 
@@ -111,7 +117,11 @@ const criarEvento = async (req, res) => {
 const atualizarEvento = async (req, res) => {
   try {
     const { id } = req.params;
-    const dados = req.body;
+    const dados = {
+      ...req.body,
+      vagasTotal: normalizeOptionalInt(req.body?.vagasTotal),
+      ativo: normalizeBoolean(req.body?.ativo)
+    };
 
     // Converter dataEvento se vier no body
     if (dados.dataEvento) {

@@ -2,7 +2,8 @@
   "name": "cinecocaisbackend",
   "version": "1.0.0",
   "description": "Backend do projeto Cine Cocais - IFMA",
-  "main": "server.js",
+  "main": "src/server.js",
+  "seed": "node seed.js",
   "scripts": {
     "dev": "nodemon src/server.js",
   "start": "node src/server.js",

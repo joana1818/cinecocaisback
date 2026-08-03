@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const { normalizeBoolean } = require('../utils/payloadParsers');
 const prisma = new PrismaClient();
 
 // Listar itens da galeria
@@ -14,6 +15,10 @@ const listarGaleria = async (req, res) => {
       where: filtros,
       orderBy: { createdAt: 'desc' }
     });
+
+    if (galeria.length === 0) {
+      res.set('X-Empty-Message', 'Nenhuma foto cadastrada na galeria no momento');
+    }
 
     res.json(galeria);
   } catch (error) {
@@ -47,6 +52,7 @@ const criarItem = async (req, res) => {
   try {
     const { titulo, descricao, imagemUrl, logoUrl, eventoId, destaque } = req.body;
     const resolvedImageUrl = imagemUrl || logoUrl;
+    const normalizedDestaque = normalizeBoolean(destaque);
 
     if (!titulo || !resolvedImageUrl) {
       return res.status(400).json({ 
@@ -60,7 +66,7 @@ const criarItem = async (req, res) => {
         descricao,
         imagemUrl: resolvedImageUrl,
         eventoId,
-        destaque: destaque || false
+        destaque: normalizedDestaque === undefined ? false : normalizedDestaque
       }
     });
 
@@ -78,7 +84,11 @@ const criarItem = async (req, res) => {
 const atualizarItem = async (req, res) => {
   try {
     const { id } = req.params;
-    const dados = req.body;
+    const dados = {
+      ...req.body,
+      destaque: normalizeBoolean(req.body?.destaque),
+      ativo: normalizeBoolean(req.body?.ativo)
+    };
 
     const item = await prisma.galeriaItem.update({
       where: { id },

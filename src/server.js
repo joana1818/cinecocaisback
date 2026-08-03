@@ -13,8 +13,29 @@ const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
+const localOriginPattern = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5500', process.env.FRONTEND_URL],
+  origin: (origin, callback) => {
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin) || localOriginPattern.test(origin)) {
+      return callback(null, true);
+    }
+
+    console.warn(`⚠️ Origem bloqueada pelo CORS: ${origin}`);
+    return callback(new Error('Origem não permitida pelo CORS'));
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -45,7 +66,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Erro interno do servidor' });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
+
+const server = app.listen(PORT, HOST, () => {
   console.log(`🎬 Servidor rodando em http://localhost:${PORT}`);
+});
+
+server.on('error', (error) => {
+  console.error('❌ Falha ao iniciar servidor:', error);
 });
