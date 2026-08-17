@@ -60,12 +60,11 @@ const toPublicUrl = (req, value) => {
     return value;
   }
 
-  if (value.startsWith('/')) {
-    const baseUrl = getBaseUrl(req);
-    return baseUrl ? `${baseUrl}${value}` : value;
-  }
+  const normalizedValue = value.replace(/^\.\//, '').replace(/^\/+/, '/');
+  const relativePath = normalizedValue.startsWith('/') ? normalizedValue : `/${normalizedValue}`;
 
-  return value;
+  const baseUrl = getBaseUrl(req);
+  return baseUrl ? `${baseUrl}${relativePath}` : relativePath;
 };
 
 const parseImageUpload = (req, res, next) => {

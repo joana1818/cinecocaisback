@@ -2,6 +2,15 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const prisma = require('../config/databse');
 
+const sanitizeUserResponse = (user) => {
+  if (!user) {
+    return user;
+  }
+
+  const { senha, cpf, telefone, ...userSemDadosSensiveis } = user;
+  return userSemDadosSensiveis;
+};
+
 // Registrar novo usuário
 const register = async (req, res) => {
   try {
@@ -56,7 +65,7 @@ const register = async (req, res) => {
 
     res.status(201).json({
       message: 'Usuário cadastrado com sucesso',
-      user,
+      user: sanitizeUserResponse(user),
       token
     });
 
@@ -103,7 +112,7 @@ const login = async (req, res) => {
     );
 
     // Remover senha do retorno
-    const { senha: _, ...userSemSenha } = user;
+    const userSemSenha = sanitizeUserResponse(user);
 
     res.json({
       message: 'Login realizado com sucesso',
@@ -127,9 +136,8 @@ const verifyToken = async (req, res) => {
         nome: true,
         email: true,
         tipo: true,
-        telefone: true,
-        cpf: true,
-        ativo: true
+        ativo: true,
+        createdAt: true
       }
     });
 

@@ -30,3 +30,13 @@ test('converts relative uploaded URLs to absolute URLs using request host', () =
 
   assert.equal(result, 'https://api.exemplo.com/uploads/foto.png');
 });
+
+test('normalizes relative upload paths without leading slash', () => {
+  const { buildPublicImageUrl } = require('../src/utils/imageUpload');
+  const result = buildPublicImageUrl({
+    protocol: 'https',
+    get: (name) => (name === 'host' ? 'api.exemplo.com' : undefined)
+  }, 'uploads/foto.png');
+
+  assert.equal(result, 'https://api.exemplo.com/uploads/foto.png');
+});
