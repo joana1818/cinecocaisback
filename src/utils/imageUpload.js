@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
+const sharp = require('sharp');
 
 const uploadDir = path.join(__dirname, '..', '..', 'uploads');
 
@@ -67,8 +68,35 @@ const toPublicUrl = (req, value) => {
   return baseUrl ? `${baseUrl}${relativePath}` : relativePath;
 };
 
+const optimizeUploadedImage = async (file) => {
+  if (!file || !file.path) {
+    return file;
+  }
+
+  const originalPath = file.path;
+  const optimizedPath = originalPath.replace(/\.[^.]+$/, '') + '-optimized.jpg';
+
+  await sharp(originalPath)
+    .resize({
+      width: 1400,
+      height: 1400,
+      fit: 'inside',
+      withoutEnlargement: true
+    })
+    .jpeg({ quality: 80, mozjpeg: true })
+    .toFile(optimizedPath);
+
+  fs.unlinkSync(originalPath);
+
+  return {
+    ...file,
+    path: optimizedPath,
+    filename: path.basename(optimizedPath)
+  };
+};
+
 const parseImageUpload = (req, res, next) => {
-  upload.any()(req, res, (err) => {
+  upload.any()(req, res, async (err) => {
     if (err) {
       return res.status(400).json({
         error: 'Erro ao enviar imagem',
@@ -78,6 +106,8 @@ const parseImageUpload = (req, res, next) => {
 
     if (req.files && req.files.length > 0) {
       req.file = req.files[0];
+      req.file = await optimizeUploadedImage(req.file);
+      req.files = [req.file];
     }
 
     const resolvedUrl = resolveImageUrl(req);
