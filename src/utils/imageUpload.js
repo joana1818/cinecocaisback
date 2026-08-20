@@ -113,18 +113,20 @@ const parseImageUpload = (req, res, next) => {
     const resolvedUrl = resolveImageUrl(req);
 
     if (resolvedUrl) {
-      if (!req.body?.imagemUrl && !req.body?.imageUrl && !req.body?.logoUrl) {
-        req.body = {
-          ...(req.body || {}),
-          imagemUrl: resolvedUrl
-        };
+      req.body = {
+        ...(req.body || {})
+      };
+
+      const hasExplicitImageField = Boolean(
+        req.body?.imagemUrl || req.body?.imageUrl || req.body?.logoUrl
+      );
+
+      if (!hasExplicitImageField) {
+        req.body.imagemUrl = resolvedUrl;
       }
 
-      if (!req.body?.logoUrl) {
-        req.body = {
-          ...(req.body || {}),
-          logoUrl: resolvedUrl
-        };
+      if (req.body?.logoUrl && !req.body?.imagemUrl && !req.body?.imageUrl) {
+        req.body.imagemUrl = req.body.logoUrl;
       }
     }
 
