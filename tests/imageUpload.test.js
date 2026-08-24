@@ -91,6 +91,8 @@ test('does not duplicate uploaded URLs into logoUrl for gallery uploads', async 
     assert.equal(req.body.logoUrl, undefined);
   } finally {
     imageUpload.upload.any = originalAny;
+    const optimizedPath = filePath.replace(/\.[^.]+$/, '') + '-optimized.jpg';
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    if (fs.existsSync(optimizedPath)) fs.unlinkSync(optimizedPath);
   }
 });
