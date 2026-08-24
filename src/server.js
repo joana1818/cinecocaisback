@@ -20,6 +20,8 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'http://localhost:5500',
   'http://127.0.0.1:5500',
+  'https://cinecocaisifma.com',
+  'https://www.cinecocaisifma.com',
   process.env.FRONTEND_URL,
   ...(process.env.FRONTEND_URLS || '').split(',').map((value) => value.trim()).filter(Boolean)
 ].filter(Boolean);
