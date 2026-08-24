@@ -13,7 +13,7 @@ const listarGaleria = async (req, res) => {
 
     const galeria = await prisma.galeriaItem.findMany({
       where: filtros,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'asc' }
     });
 
     if (galeria.length === 0) {
