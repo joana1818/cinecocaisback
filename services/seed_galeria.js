@@ -93,7 +93,7 @@ async function main() {
     await prisma.galeriaItem.create({
       data: {
         titulo: foto.titulo,
-        descricao: foto.categoria !== 'Geral' ? `Registro do ano ${foto.categoria}` : 'Registro do Projeto Cine Cocais',
+        descricao: descricaoPorCategoria(foto.categoria, foto.titulo, foto.url),
         imagemUrl,
         destaque: false,
         ativo: true,
